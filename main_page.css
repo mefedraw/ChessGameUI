@@ -1,0 +1,141 @@
+body {
+    background-color: white;
+    font-family: Aclonica, sans-serif;
+}
+
+.container {
+    position: relative;
+    width: 390px;
+    height: 844px;
+    background: white;
+}
+
+.background-image {
+    width: 390px;
+    height: 844px;
+    position: absolute;
+    top: 0;
+}
+
+.chessboard-container {
+    position: absolute;
+    width: 390px;
+    height: 390px;
+    top: 180px;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chessboard {
+    width: 390px;
+    height: 390px;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 0;
+    border: 5px solid #EDD6B0;
+    mix-blend-mode: difference;
+}
+
+.square {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.square.light {
+    background-color: #FFFFFF;
+}
+
+.square.dark {
+    background-color: #000000;
+}
+
+.square::before {
+    position: absolute;
+    font-size: 12px;
+    color: white;
+}
+
+.square:nth-child(8n + 1)::before {
+    content: attr(data-number);
+    top: 3px;
+    left: 2px;
+}
+
+.square:nth-child(n + 58)::before {
+    content: attr(data-letter);
+    bottom: 0px;
+    right: 2px;
+}
+
+.square:nth-child(57)::before {
+    content: "1"; 
+    top: 3px;
+    left: 2px;
+    position: absolute;
+    font-size: 12px;
+}
+
+.square:nth-child(57)::after {
+    content: "a";  
+    bottom: 0px;
+    right: 2px;
+    position: absolute;
+    font-size: 12px;
+}
+
+.square.light::before {
+    color: rgb(0, 0, 0);
+}
+
+.user-info1, .user-info2 {
+    position: absolute;
+    width: 360px;
+    height: 70px;
+    left: 10px;
+    background: rgba(60, 111, 111, 0.8);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+}
+
+.user-info1 {
+    margin-top: 70px;
+}
+
+.user-info2 {
+    margin-top: 600px;
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.user-image {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+}
+
+.username {
+    text-align: center;
+    color: white;
+    font-size: 13px;
+}
+
+.time {
+    color: white;
+    font-size: 20px;
+    margin-right: 10px;
+}
