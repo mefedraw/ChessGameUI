@@ -1,7 +1,7 @@
-let tg = window.Telegram.WebApp;
+// let tg = window.Telegram.WebApp;
 
-tg.expand();
-tg.ready();
+// tg.expand();
+// tg.ready();
 
 const chessboard = document.getElementById('chessboard');
 
