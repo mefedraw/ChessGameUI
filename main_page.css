@@ -3,7 +3,6 @@ body {
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-image: url('reqs/1.jpg');
     background-repeat: no-repeat;
     background-size: cover;
     font-family: Aclonica, sans-serif;
@@ -44,11 +43,11 @@ body {
 }
 
 .square.light {
-    background-color: #FFFFFF;
+    background-color: #FFFF99; /* Светлый желтый */
 }
 
 .square.dark {
-    background-color: #000000;
+    background-color: #045004; /* Светло-зеленый */
 }
 
 .square::before {
@@ -139,4 +138,12 @@ body {
     width: 90%;
     height: 90%;
     pointer-events: none;
+}
+
+.command-container{
+    border: 5px solid #24d494;
+    margin-left: 200px;
+    .command-btn{
+        background-color: greenyellow;
+    }
 }
