@@ -5,32 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="main_page.css">
     <script src="app_main_page.js" defer></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Aclonica&display=swap" rel="stylesheet">
+    <script async src="https://telegram.org/js/telegram-web-app.js"></script> <!-- Подключение TG WebApp -->
 </head>
 <body>
     <div class="container">
         <div class="user-container">
-            <div class="user-info">
+            <div class="user-info1">
                 <div class="user-card">
-                    <img src="reqs\ava1.jpg" alt="user" class="user-image">
-                    <div class="username">@sigma_kotik</div>
-                    <div class="time">9:41</div>
+                    <img src="reqs/default-avatar.png" alt="user" class="user-image">
+                    <div class="username">@user1</div>
+                    <div class="time white-time">10:00</div>
                 </div>
-            </div>    
+            </div>
         </div>
-        
+
         <div class="chessboard-container">
             <div class="chessboard" id="chessboard"></div>
         </div>
 
         <div class="user-container">
-            <div class="user-info">
+            <div class="user-info2">
                 <div class="user-card">
-                    <img src="reqs\ava2.jpg" alt="user" class="user-image">
-                    <div class="username">@hamster_criminal</div>
-                    <div class="time">8:21</div>
+                    <img src="reqs/default-avatar.png" alt="user" class="user-image">
+                    <div class="username">@user2</div>
+                    <div class="time black-time">10:00</div>
                 </div>
             </div>
         </div>
@@ -38,12 +36,15 @@
         <div class="user-container">
             <div class="btns">
                 <div class="user-card">
-                    <img src="reqs\white-flag_1f3f3-fe0f.png" alt="btn" class="btn-image">
-                    <img src="reqs\handshake_light-skin-tone_1f91d-1f3fb_1f3fb.png" alt="btn" class="btn-image">
+                    <button class="action-btn">
+                        <img src="reqs/white-flag-svgrepo-com.svg" alt="surrender" class="btn-image">
+                    </button>
+                    <button class="action-btn">
+                        <img src="reqs/handshake-svgrepo-com.svg" alt="draw-offer" class="btn-image">
+                    </button>
                 </div>
             </div>
         </div>
-        
     </div>
 </body>
 </html>
