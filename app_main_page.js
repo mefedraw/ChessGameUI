@@ -1,6 +1,6 @@
-let tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
+// let tg = window.Telegram.WebApp;
+// tg.expand();
+// tg.ready();
 
 let player1 = null;
 let player2 = null;
