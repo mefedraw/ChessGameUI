@@ -1,27 +1,25 @@
-// let tg = window.Telegram.WebApp;
-// tg.expand();
-// tg.ready();
+let tg = window.Telegram.WebApp;
+tg.expand();
+tg.ready();
 
 let player1 = null;
 let player2 = null;
 let matchId = null;
 
+// Ожидание двух пользователей
 tg.onEvent('mainButtonClicked', () => {
-    // Получаем данные первого пользователя
     if (!player1) {
         player1 = tg.initDataUnsafe.user;
         document.querySelector('.user-info1 .username').textContent = `@${player1.username}`;
         document.querySelector('.user-info1 .user-image').src = player1.photo_url || 'reqs/default-avatar.png';
         console.log(`Player 1: @${player1.username}, ID: ${player1.id}`);
-    } 
-    // Получаем данные второго пользователя и начинаем матч
-    else if (!player2) {
+    } else if (!player2) {
         player2 = tg.initDataUnsafe.user;
         document.querySelector('.user-info2 .username').textContent = `@${player2.username}`;
         document.querySelector('.user-info2 .user-image').src = player2.photo_url || 'reqs/default-avatar.png';
         console.log(`Player 2: @${player2.username}, ID: ${player2.id}`);
 
-        // Генерируем ID матча как сумму ID двух игроков
+        // Генерация ID матча как суммы ID двух игроков
         matchId = player1.id + player2.id;
         console.log('ID матча:', matchId);
 
@@ -29,18 +27,19 @@ tg.onEvent('mainButtonClicked', () => {
     }
 });
 
+// Функция для начала матча
 function startMatch() {
     if (matchId && player1 && player2) {
         console.log('Матч начался с ID:', matchId);
-        // Отправляем на сервер команду для начала матча
+        // Отправляем команду на сервер для начала матча
         socket.send(`MATCH_START:${matchId}`);
         startTimer();
     }
 }
 
 // Таймеры
-let whiteTime = 600; // 10 минут в секундах для белых
-let blackTime = 600; // 10 минут в секундах для черных
+let whiteTime = 600;
+let blackTime = 600;
 let isWhiteTurn = true;
 let timerInterval = null;
 
@@ -73,21 +72,20 @@ function updateTimerDisplay(player, time) {
 
 function switchTurn() {
     isWhiteTurn = !isWhiteTurn;
-    if (!timerInterval) startTimer(); // Запуск таймера после первого хода
+    if (!timerInterval) startTimer();
 }
 
-// Отправка хода на сервер
+// Обработка нажатия на клетку
 function handleSquareClick(row, col, files, ranks) {
-    const clickedSquare = files[col] + ranks[row]; 
+    const clickedSquare = files[col] + ranks[row];
 
     if (selectedSquare === null) {
         selectedSquare = clickedSquare;
         console.log('Выбрана клетка: ' + selectedSquare);
     } else {
-        const move = `${selectedSquare}${clickedSquare}`; 
+        const move = `${selectedSquare}${clickedSquare}`;
         console.log('Ход: ' + move);
 
-        // Отправляем ход на сервер
         socket.send(`${matchId}:${move}`);
 
         selectedSquare = null;
@@ -95,7 +93,7 @@ function handleSquareClick(row, col, files, ranks) {
     }
 }
 
-// WebSocket настройки
+// WebSocket
 const socket = new WebSocket('ws://localhost:8181');
 
 socket.onmessage = function (event) {
@@ -123,7 +121,8 @@ const defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 createChessboardFromFEN(defaultFEN, 'w');
 
 function createChessboardFromFEN(fen, playerColor) {
-    chessboard.innerHTML = ''; 
+    const chessboard = document.getElementById('chessboard');
+    chessboard.innerHTML = '';
     const ranks = playerColor === 'w' ? ranksWhite : ranksBlack;
     const files = playerColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
