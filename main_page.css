@@ -147,3 +147,7 @@ body {
         background-color: greenyellow;
     }
 }
+
+.selected {
+    border: 2px solid red;
+}
