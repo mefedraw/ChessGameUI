@@ -1,50 +1,29 @@
-let tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
-
-let player1 = null;
-let player2 = null;
-let matchId = null;
-
-// Ожидание двух пользователей
-tg.onEvent('mainButtonClicked', () => {
-    if (!player1) {
-        player1 = tg.initDataUnsafe.user;
-        document.querySelector('.user-info1 .username').textContent = `@${player1.username}`;
-        document.querySelector('.user-info1 .user-image').src = player1.photo_url || 'reqs/default-avatar.png';
-        console.log(`Player 1: @${player1.username}, ID: ${player1.id}`);
-    } else if (!player2) {
-        player2 = tg.initDataUnsafe.user;
-        document.querySelector('.user-info2 .username').textContent = `@${player2.username}`;
-        document.querySelector('.user-info2 .user-image').src = player2.photo_url || 'reqs/default-avatar.png';
-        console.log(`Player 2: @${player2.username}, ID: ${player2.id}`);
-
-        // Генерация ID матча как суммы ID двух игроков
-        matchId = player1.id + player2.id;
-        console.log('ID матча:', matchId);
-
-        startMatch();
-    }
+document.querySelectorAll('.action-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        if (this.alt === 'surrender') {
+            console.log('Surrender button clicked');
+        } else if (this.alt === 'draw-offer') {
+            console.log('Draw offer button clicked');
+        }
+    });
 });
 
-// Функция для начала матча
-function startMatch() {
-    if (matchId && player1 && player2) {
-        console.log('Матч начался с ID:', matchId);
-        // Отправляем команду на сервер для начала матча
-        socket.send(`MATCH_START:${matchId}`);
-        startTimer();
-    }
-}
+const chessboard = document.getElementById('chessboard');
+const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+const ranksWhite = [8, 7, 6, 5, 4, 3, 2, 1];
+const ranksBlack = [1, 2, 3, 4, 5, 6, 7, 8];
+let selectedSquare = null;
+let highlightedSquare = null; // Для подсветки выбранной клетки
+let matchId = 1; // Пример ID матча
 
 // Таймеры
-let whiteTime = 600;
-let blackTime = 600;
+let whiteTime = 600; // 10 минут в секундах для белых
+let blackTime = 600; // 10 минут в секундах для черных
 let isWhiteTurn = true;
 let timerInterval = null;
 
 function startTimer() {
-    if (timerInterval) return;
+    if (timerInterval) return; // Таймер уже запущен
 
     timerInterval = setInterval(() => {
         if (isWhiteTurn) {
@@ -72,57 +51,11 @@ function updateTimerDisplay(player, time) {
 
 function switchTurn() {
     isWhiteTurn = !isWhiteTurn;
-    if (!timerInterval) startTimer();
+    if (!timerInterval) startTimer(); // Запуск таймера после первого хода белого
 }
-
-// Обработка нажатия на клетку
-function handleSquareClick(row, col, files, ranks) {
-    const clickedSquare = files[col] + ranks[row];
-
-    if (selectedSquare === null) {
-        selectedSquare = clickedSquare;
-        console.log('Выбрана клетка: ' + selectedSquare);
-    } else {
-        const move = `${selectedSquare}${clickedSquare}`;
-        console.log('Ход: ' + move);
-
-        socket.send(`${matchId}:${move}`);
-
-        selectedSquare = null;
-        switchTurn();
-    }
-}
-
-// WebSocket
-const socket = new WebSocket('ws://localhost:8181');
-
-socket.onmessage = function (event) {
-    const data = event.data;
-
-    if (data.includes("FEN:")) {
-        const [newFEN, playerColor] = data.slice(4).split(":");
-        createChessboardFromFEN(newFEN, playerColor);
-    } else if (data.includes("LOGS:")) {
-        const logs = data.slice(5);
-        document.getElementById('server_logs_field').innerHTML = logs.replace(/\n/g, '<br>');
-    }
-};
-
-socket.onopen = function () {
-    console.log('Соединение установлено');
-};
-
-socket.onerror = function (error) {
-    console.error('Ошибка WebSocket:', error);
-};
-
-// Генерация доски
-const defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-createChessboardFromFEN(defaultFEN, 'w');
 
 function createChessboardFromFEN(fen, playerColor) {
-    const chessboard = document.getElementById('chessboard');
-    chessboard.innerHTML = '';
+    chessboard.innerHTML = ''; // Очистка доски
     const ranks = playerColor === 'w' ? ranksWhite : ranksBlack;
     const files = playerColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
@@ -162,6 +95,7 @@ function createChessboardFromFEN(fen, playerColor) {
         }
 
         addPieceFromFEN(square, row, col, rows);
+
         square.addEventListener('click', () => handleSquareClick(row, col, files, ranks));
     }
 }
@@ -172,13 +106,13 @@ function addPieceFromFEN(square, row, col, rows) {
 
     for (let char of fenRow) {
         if (!isNaN(char)) {
-            colIndex += parseInt(char);
+            colIndex += parseInt(char); // пропускаем пустые клетки
         } else {
             const color = char === char.toUpperCase() ? 'white' : 'black';
             const piece = char.toLowerCase();
             if (colIndex === col) {
                 const img = document.createElement('img');
-                img.src = `reqs/${color}_${piece}.svg`;
+                img.src = `reqs/${color}_${piece}.svg`; // Путь к изображению фигуры
                 img.classList.add('chess-piece');
                 square.appendChild(img);
             }
@@ -186,3 +120,160 @@ function addPieceFromFEN(square, row, col, rows) {
         }
     }
 }
+
+function handleSquareClick(row, col, files, ranks) {
+    const clickedSquare = files[col] + ranks[row]; // Получаем обозначение клетки, например "e2"
+
+    // Найдем все клетки, которые имеют класс highlight, и уберем его
+    if (highlightedSquare) {
+        // Возвращаем исходный цвет клетки в зависимости от ее класса
+        if (highlightedSquare.classList.contains('light')) {
+            highlightedSquare.style.backgroundColor = '#efe6d5';
+        } else if (highlightedSquare.classList.contains('dark')) {
+            highlightedSquare.style.backgroundColor = 'rgba(60, 111, 111, 0.8)';
+        }
+        highlightedSquare.classList.remove('highlight');
+    }
+
+    const square = chessboard.querySelector(`.square:nth-child(${(row * 8) + col + 1})`);
+
+    if (selectedSquare === null) {
+        // Если не выбрана клетка, мы выбираем ее
+        selectedSquare = clickedSquare;
+        highlightedSquare = square;
+
+        if (square.classList.contains('light')) {
+            square.style.backgroundColor = '#d4c7b4';
+        } else if (square.classList.contains('dark')) {
+            square.style.backgroundColor = 'rgba(100, 151, 151, 1)'; 
+        }
+
+        square.classList.add('highlight');
+        console.log('Selected square: ' + selectedSquare);
+    } else {
+        // Если уже была выбрана клетка, то делаем ход
+        const move = `${selectedSquare}${clickedSquare}`; // Формат хода, например "e2e4"
+        console.log('Move: ' + move);
+
+        socket.send(`${matchId}:${move}`);
+
+        // Снимаем выделение после хода
+        selectedSquare = null;
+        highlightedSquare = null;
+        switchTurn(); // Переключаем ход
+    }
+}
+
+
+const commandInput = document.getElementById('commandInput');
+const sendCommandButton = document.getElementById('sendCommand');
+const logsField = document.getElementById('server_logs_field');
+
+const socket = new WebSocket('ws://localhost:8181');
+
+sendCommandButton.addEventListener('click', () => {
+    const command = commandInput.value;
+    if (command) {
+        socket.send(command);
+        commandInput.value = '';
+    }
+});
+
+socket.onmessage = function (event) {
+    const data = event.data;
+
+    if (data.includes("FEN:")) {
+        const parts = data.slice(4).split(":");
+        const newFEN = parts[0];
+        const playerColor = parts[1];
+        createChessboardFromFEN(newFEN, playerColor);
+    } else if (data.includes("LOGS:")) {
+        const logs = data.slice(5);
+        logsField.innerHTML = logs.replace(/\n/g, '<br>');
+    }
+};
+
+socket.onopen = function () {
+    console.log('Соединение установлено');
+};
+
+socket.onerror = function (error) {
+    console.error('Ошибка WebSocket:', error);
+};
+
+const defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+
+createChessboardFromFEN(defaultFen, 'w');
+
+window.addEventListener('load', function() {
+    const tg = window.Telegram.WebApp; // Объект Telegram Web App API
+
+    // Проверяем, доступен ли API и есть ли данные пользователя
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const userData = tg.initDataUnsafe.user;
+
+        // Объект с данными пользователя, включая Telegram ID
+        const userInfo = {
+            telegramId: userData.id,
+            firstName: userData.first_name,
+            lastName: userData.last_name,
+            username: userData.username
+        };
+
+        // Установим соединение с WebSocket сервером
+        const socket = new WebSocket('ws://localhost:8181');
+
+        // Отправляем данные о пользователе после установления соединения
+        socket.onopen = function() {
+            console.log('Соединение установлено, отправляем Telegram ID');
+            
+            // Отправляем на сервер Telegram ID и другую информацию
+            socket.send(JSON.stringify({
+                type: 'userInfo',
+                data: userInfo
+            }));
+
+            // Если успешно отправлены данные, скрываем блок user-info
+            const userInfoBlock = document.querySelector('.user-info');
+            if (userInfoBlock) {
+                userInfoBlock.style.display = 'none'; // Скрываем блок
+                // Или можно удалить его полностью:
+                // userInfoBlock.remove();
+            }
+        };
+
+        // Обработка сообщений от сервера
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'userInfo') {
+                updateUserInfo(data.data);
+            } else if (data.type === 'fenUpdate') {
+                const newFEN = data.fen;
+                const playerColor = data.playerColor;
+                createChessboardFromFEN(newFEN, playerColor);
+            } else if (data.type === 'logs') {
+                logsField.innerHTML = data.logs.replace(/\n/g, '<br>');
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.error('Ошибка WebSocket:', error);
+        };
+
+        // Функция для обновления информации о пользователях
+        function updateUserInfo(userData) {
+            // Обновляем информацию о белом игроке
+            document.querySelector('.user-info1 .username').textContent = userData.whitePlayer.username;
+            document.querySelector('.user-info1 .user-image').src = userData.whitePlayer.avatar;
+            updateTimerDisplay('white', userData.whitePlayer.time);
+
+            // Обновляем информацию о черном игроке
+            document.querySelector('.user-info2 .username').textContent = userData.blackPlayer.username;
+            document.querySelector('.user-info2 .user-image').src = userData.blackPlayer.avatar;
+            updateTimerDisplay('black', userData.blackPlayer.time);
+        }
+    } else {
+        console.error('Данные о пользователе недоступны');
+    }
+});
