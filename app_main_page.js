@@ -1,8 +1,3 @@
-// let tg = window.Telegram.WebApp;
-
-// tg.expand();
-// tg.ready();
-
 document.querySelectorAll('.action-btn').forEach(button => {
     button.addEventListener('click', function () {
         if (this.alt === 'surrender') {
@@ -54,22 +49,43 @@ function updateTimerDisplay(player, time) {
     document.querySelector(`.${player}-time`).textContent = timeString;
 }
 
+function updatePlayerLayout(playerColor) {
+    const infoContainer = document.getElementById('info-container');
+    const playerInfo = document.getElementById('player-info');
+    const opponentInfo = document.getElementById('opponent-info');
+    playerInfo.classList.remove('user-info1', 'user-info2');
+    opponentInfo.classList.remove('user-info1', 'user-info2');
+
+    if (playerColor === 'w') {
+        // Если белые, оставляем игрока снизу
+        infoContainer.appendChild(opponentInfo);
+        infoContainer.appendChild(document.querySelector('.chessboard-container'));
+        infoContainer.appendChild(playerInfo);
+        opponentInfo.classList.add('user-info1');
+        playerInfo.classList.add('user-info2');
+    } else {
+        // Если черные, меняем местами игрока и противника
+        infoContainer.appendChild(playerInfo);
+        infoContainer.appendChild(document.querySelector('.chessboard-container'));
+        infoContainer.appendChild(opponentInfo);
+        playerInfo.classList.add('user-info1');
+        opponentInfo.classList.add('user-info2');
+    }
+}
+
 function switchTurn() {
     isWhiteTurn = !isWhiteTurn;
     if (!timerInterval) startTimer(); // Запуск таймера после первого хода белого
 }
 
 function createChessboardFromFEN(fen, playerColor) {
+    updatePlayerLayout(playerColor);  // Обновляем расположение блоков
+
     chessboard.innerHTML = ''; // Очистка доски
     const ranks = playerColor === 'w' ? ranksWhite : ranksBlack;
-    const files = playerColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
-    const position = fen.split(' ')[0];
+    const files = playerColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+    let position = fen.split(' ')[0];
     let rows = position.split('/');
-
-    if (playerColor === 'b') {
-        rows = rows.reverse();
-    }
 
     for (let i = 0; i < 64; i++) {
         const square = document.createElement('div');
@@ -100,8 +116,7 @@ function createChessboardFromFEN(fen, playerColor) {
         }
 
         addPieceFromFEN(square, row, col, rows);
-
-        square.addEventListener('click', () => handleSquareClick(row, col, files, ranks));
+        square.addEventListener('click', () => handleSquareClick(row, col, files, ranks, playerColor));
     }
 }
 
@@ -126,28 +141,12 @@ function addPieceFromFEN(square, row, col, rows) {
     }
 }
 
-function handleSquareClick(row, col, files, ranks) {
+function handleSquareClick(row, col, files, ranks, playerColor) {
     const clickedSquare = files[col] + ranks[row]; // Получаем обозначение клетки, например "e2"
-    const square = chessboard.querySelector(`.square:nth-child(${(row * 8) + col + 1})`);
-
-    // Проверка, выбрали ли ту же клетку
-    if (selectedSquare === clickedSquare) {
-        // Если выбрали ту же клетку — отменяем выбор
-        if (highlightedSquare.classList.contains('light')) {
-            highlightedSquare.style.backgroundColor = '#efe6d5';
-        } else if (highlightedSquare.classList.contains('dark')) {
-            highlightedSquare.style.backgroundColor = 'rgba(60, 111, 111, 0.8)';
-        }
-        highlightedSquare.classList.remove('highlight');
-
-        selectedSquare = null;
-        highlightedSquare = null;
-        console.log('Canceled selection: ' + clickedSquare);
-        return;
-    }
 
     // Найдем все клетки, которые имеют класс highlight, и уберем его
     if (highlightedSquare) {
+        // Возвращаем исходный цвет клетки в зависимости от ее класса
         if (highlightedSquare.classList.contains('light')) {
             highlightedSquare.style.backgroundColor = '#efe6d5';
         } else if (highlightedSquare.classList.contains('dark')) {
@@ -155,6 +154,8 @@ function handleSquareClick(row, col, files, ranks) {
         }
         highlightedSquare.classList.remove('highlight');
     }
+
+    const square = chessboard.querySelector(`.square:nth-child(${(row * 8) + col + 1})`);
 
     if (selectedSquare === null) {
         // Если не выбрана клетка, мы выбираем ее
@@ -171,9 +172,8 @@ function handleSquareClick(row, col, files, ranks) {
         console.log('Selected square: ' + selectedSquare);
     } else {
         // Если уже была выбрана клетка, то делаем ход
-        const move = `${selectedSquare}${clickedSquare}`; // Формат хода, например "e2e4"
+        let move = `${selectedSquare}${clickedSquare}`; // Формат хода, например "e2e4"
         console.log('Move: ' + move);
-
         socket.send(`${matchId}:${move}`);
 
         // Снимаем выделение после хода
@@ -182,7 +182,6 @@ function handleSquareClick(row, col, files, ranks) {
         switchTurn(); // Переключаем ход
     }
 }
-
 
 
 const commandInput = document.getElementById('commandInput');
@@ -221,6 +220,8 @@ socket.onerror = function (error) {
     console.error('Ошибка WebSocket:', error);
 };
 
-const defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+const whiteFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+const blackFEN = "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr";
 
-createChessboardFromFEN(defaultFen, 'w');
+
+createChessboardFromFEN(whiteFEN, 'w');
