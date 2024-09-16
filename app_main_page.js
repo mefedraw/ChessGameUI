@@ -57,13 +57,17 @@ function switchTurn() {
 function createChessboardFromFEN(fen, playerColor) {
     chessboard.innerHTML = ''; // Очистка доски
     const ranks = playerColor === 'w' ? ranksWhite : ranksBlack;
-    const files = playerColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
-    const position = fen.split(' ')[0];
+    const files = playerColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+    let position = fen.split(' ')[0];
     let rows = position.split('/');
 
+    // Если игрок черный, мы изменим расстановку короля и ферзя для нижней и верхней части доски
     if (playerColor === 'b') {
         rows = rows.reverse();
+
+        // Меняем местами короля и ферзя как для верхней, так и для нижней линии
+        rows[0] = swapKingAndQueen(rows[0]);
+        rows[7] = swapKingAndQueen(rows[7]);
     }
 
     for (let i = 0; i < 64; i++) {
@@ -96,8 +100,14 @@ function createChessboardFromFEN(fen, playerColor) {
 
         addPieceFromFEN(square, row, col, rows);
 
-        square.addEventListener('click', () => handleSquareClick(row, col, files, ranks));
+        // Передаем playerColor в handleSquareClick
+        square.addEventListener('click', () => handleSquareClick(row, col, files, ranks, playerColor));
     }
+}
+
+function swapKingAndQueen(row) {
+    // Заменяем порядок короля и ферзя: меняем 'qk' на 'kq' и 'QK' на 'KQ'
+    return row.replace('qk', 'kq').replace('QK', 'KQ');
 }
 
 function addPieceFromFEN(square, row, col, rows) {
@@ -121,7 +131,7 @@ function addPieceFromFEN(square, row, col, rows) {
     }
 }
 
-function handleSquareClick(row, col, files, ranks) {
+function handleSquareClick(row, col, files, ranks, playerColor) {
     const clickedSquare = files[col] + ranks[row]; // Получаем обозначение клетки, например "e2"
 
     // Найдем все клетки, которые имеют класс highlight, и уберем его
@@ -145,16 +155,30 @@ function handleSquareClick(row, col, files, ranks) {
         if (square.classList.contains('light')) {
             square.style.backgroundColor = '#d4c7b4';
         } else if (square.classList.contains('dark')) {
-            square.style.backgroundColor = 'rgba(100, 151, 151, 1)'; 
+            square.style.backgroundColor = 'rgba(100, 151, 151, 1)';
         }
 
         square.classList.add('highlight');
         console.log('Selected square: ' + selectedSquare);
     } else {
         // Если уже была выбрана клетка, то делаем ход
-        const move = `${selectedSquare}${clickedSquare}`; // Формат хода, например "e2e4"
-        console.log('Move: ' + move);
+        let move = `${selectedSquare}${clickedSquare}`; // Формат хода, например "e2e4"
 
+        if (playerColor === 'b') {
+            // Если игрок чёрный, нужно перевернуть файлы (столбцы)
+            const flippedFiles = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            const flipCoord = (coord) => {
+                const file = coord[0];
+                const rank = coord[1];
+                const flippedFile = flippedFiles[7 - flippedFiles.indexOf(file)]; // зеркально переворачиваем
+                return flippedFile + rank;
+            };
+
+            // Переворачиваем ходы
+            move = flipCoord(selectedSquare) + flipCoord(clickedSquare);
+        }
+
+        console.log('Move: ' + move);
         socket.send(`${matchId}:${move}`);
 
         // Снимаем выделение после хода
@@ -163,7 +187,6 @@ function handleSquareClick(row, col, files, ranks) {
         switchTurn(); // Переключаем ход
     }
 }
-
 
 const commandInput = document.getElementById('commandInput');
 const sendCommandButton = document.getElementById('sendCommand');
@@ -204,76 +227,3 @@ socket.onerror = function (error) {
 const defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 createChessboardFromFEN(defaultFen, 'w');
-
-window.addEventListener('load', function() {
-    const tg = window.Telegram.WebApp; // Объект Telegram Web App API
-
-    // Проверяем, доступен ли API и есть ли данные пользователя
-    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        const userData = tg.initDataUnsafe.user;
-
-        // Объект с данными пользователя, включая Telegram ID
-        const userInfo = {
-            telegramId: userData.id,
-            firstName: userData.first_name,
-            lastName: userData.last_name,
-            username: userData.username
-        };
-
-        // Установим соединение с WebSocket сервером
-        const socket = new WebSocket('ws://localhost:8181');
-
-        // Отправляем данные о пользователе после установления соединения
-        socket.onopen = function() {
-            console.log('Соединение установлено, отправляем Telegram ID');
-            
-            // Отправляем на сервер Telegram ID и другую информацию
-            socket.send(JSON.stringify({
-                type: 'userInfo',
-                data: userInfo
-            }));
-
-            // Если успешно отправлены данные, скрываем блок user-info
-            const userInfoBlock = document.querySelector('.user-info');
-            if (userInfoBlock) {
-                userInfoBlock.style.display = 'none'; // Скрываем блок
-                // Или можно удалить его полностью:
-                // userInfoBlock.remove();
-            }
-        };
-
-        // Обработка сообщений от сервера
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-
-            if (data.type === 'userInfo') {
-                updateUserInfo(data.data);
-            } else if (data.type === 'fenUpdate') {
-                const newFEN = data.fen;
-                const playerColor = data.playerColor;
-                createChessboardFromFEN(newFEN, playerColor);
-            } else if (data.type === 'logs') {
-                logsField.innerHTML = data.logs.replace(/\n/g, '<br>');
-            }
-        };
-
-        socket.onerror = function(error) {
-            console.error('Ошибка WebSocket:', error);
-        };
-
-        // Функция для обновления информации о пользователях
-        function updateUserInfo(userData) {
-            // Обновляем информацию о белом игроке
-            document.querySelector('.user-info1 .username').textContent = userData.whitePlayer.username;
-            document.querySelector('.user-info1 .user-image').src = userData.whitePlayer.avatar;
-            updateTimerDisplay('white', userData.whitePlayer.time);
-
-            // Обновляем информацию о черном игроке
-            document.querySelector('.user-info2 .username').textContent = userData.blackPlayer.username;
-            document.querySelector('.user-info2 .user-image').src = userData.blackPlayer.avatar;
-            updateTimerDisplay('black', userData.blackPlayer.time);
-        }
-    } else {
-        console.error('Данные о пользователе недоступны');
-    }
-});
