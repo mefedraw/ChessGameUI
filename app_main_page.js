@@ -1,3 +1,8 @@
+let tg = window.Telegram.WebApp; 
+
+tg.expand(); 
+tg.ready(); 
+
 document.querySelectorAll('.action-btn').forEach(button => {
     button.addEventListener('click', function () {
         if (this.alt === 'surrender') {
@@ -49,26 +54,43 @@ function updateTimerDisplay(player, time) {
     document.querySelector(`.${player}-time`).textContent = timeString;
 }
 
+function updatePlayerLayout(playerColor) {
+    const infoContainer = document.getElementById('info-container');
+    const playerInfo = document.getElementById('player-info');
+    const opponentInfo = document.getElementById('opponent-info');
+    playerInfo.classList.remove('user-info1', 'user-info2');
+    opponentInfo.classList.remove('user-info1', 'user-info2');
+
+    if (playerColor === 'w') {
+        // Если белые, оставляем игрока снизу
+        infoContainer.appendChild(opponentInfo);
+        infoContainer.appendChild(document.querySelector('.chessboard-container'));
+        infoContainer.appendChild(playerInfo);
+        opponentInfo.classList.add('user-info1');
+        playerInfo.classList.add('user-info2');
+    } else {
+        // Если черные, меняем местами игрока и противника
+        infoContainer.appendChild(playerInfo);
+        infoContainer.appendChild(document.querySelector('.chessboard-container'));
+        infoContainer.appendChild(opponentInfo);
+        playerInfo.classList.add('user-info1');
+        opponentInfo.classList.add('user-info2');
+    }
+}
+
 function switchTurn() {
     isWhiteTurn = !isWhiteTurn;
     if (!timerInterval) startTimer(); // Запуск таймера после первого хода белого
 }
 
 function createChessboardFromFEN(fen, playerColor) {
+    updatePlayerLayout(playerColor);  // Обновляем расположение блоков
+
     chessboard.innerHTML = ''; // Очистка доски
     const ranks = playerColor === 'w' ? ranksWhite : ranksBlack;
     const files = playerColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
     let position = fen.split(' ')[0];
     let rows = position.split('/');
-
-    // Если игрок черный, мы изменим расстановку короля и ферзя для нижней и верхней части доски
-    if (playerColor === 'b') {
-        rows = rows.reverse();
-
-        // Меняем местами короля и ферзя как для верхней, так и для нижней линии
-        rows[0] = swapKingAndQueen(rows[0]);
-        rows[7] = swapKingAndQueen(rows[7]);
-    }
 
     for (let i = 0; i < 64; i++) {
         const square = document.createElement('div');
@@ -99,15 +121,8 @@ function createChessboardFromFEN(fen, playerColor) {
         }
 
         addPieceFromFEN(square, row, col, rows);
-
-        // Передаем playerColor в handleSquareClick
         square.addEventListener('click', () => handleSquareClick(row, col, files, ranks, playerColor));
     }
-}
-
-function swapKingAndQueen(row) {
-    // Заменяем порядок короля и ферзя: меняем 'qk' на 'kq' и 'QK' на 'KQ'
-    return row.replace('qk', 'kq').replace('QK', 'KQ');
 }
 
 function addPieceFromFEN(square, row, col, rows) {
@@ -144,7 +159,7 @@ function handleSquareClick(row, col, files, ranks, playerColor) {
         }
         highlightedSquare.classList.remove('highlight');
     }
-
+    
     const square = chessboard.querySelector(`.square:nth-child(${(row * 8) + col + 1})`);
 
     if (selectedSquare === null) {
@@ -163,21 +178,6 @@ function handleSquareClick(row, col, files, ranks, playerColor) {
     } else {
         // Если уже была выбрана клетка, то делаем ход
         let move = `${selectedSquare}${clickedSquare}`; // Формат хода, например "e2e4"
-
-        if (playerColor === 'b') {
-            // Если игрок чёрный, нужно перевернуть файлы (столбцы)
-            const flippedFiles = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-            const flipCoord = (coord) => {
-                const file = coord[0];
-                const rank = coord[1];
-                const flippedFile = flippedFiles[7 - flippedFiles.indexOf(file)]; // зеркально переворачиваем
-                return flippedFile + rank;
-            };
-
-            // Переворачиваем ходы
-            move = flipCoord(selectedSquare) + flipCoord(clickedSquare);
-        }
-
         console.log('Move: ' + move);
         socket.send(`${matchId}:${move}`);
 
@@ -187,6 +187,7 @@ function handleSquareClick(row, col, files, ranks, playerColor) {
         switchTurn(); // Переключаем ход
     }
 }
+
 
 const commandInput = document.getElementById('commandInput');
 const sendCommandButton = document.getElementById('sendCommand');
@@ -224,6 +225,8 @@ socket.onerror = function (error) {
     console.error('Ошибка WebSocket:', error);
 };
 
-const defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+const whiteFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+const blackFEN = "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr";
 
-createChessboardFromFEN(defaultFen, 'w');
+
+createChessboardFromFEN(whiteFEN, 'w');
