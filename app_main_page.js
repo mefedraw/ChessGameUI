@@ -188,7 +188,7 @@ const commandInput = document.getElementById('commandInput');
 const sendCommandButton = document.getElementById('sendCommand');
 const logsField = document.getElementById('server_logs_field');
 
-const socket = new WebSocket('ws://localhost:8181');
+const socket = new WebSocket('ws://192.168.0.113:8181');
 
 sendCommandButton.addEventListener('click', () => {
     const command = commandInput.value;
