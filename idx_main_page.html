@@ -8,10 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Aclonica&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Krona+One&display=swap" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge@2.0.8/dist/browser.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -25,6 +23,22 @@
             </div>
             <div class="chessboard-container">
                 <div class="chessboard" id="chessboard"></div>
+
+                <div id="surrenderConfirmModal" class="modal hidden">
+                    <div class="modal-content">
+                        <p>Вы уверены, что хотите сдаться?</p>
+                        <button id="confirm-surrender" class="btn_yn">Сдаться</button>
+                        <button id="cancel-surrender" class="btn_yn">Продолжить</button>
+                    </div>
+                </div>
+
+                <div id="drawOfferModal" class="modal hidden">
+                    <div class="modal-content">
+                        <p>Ваш противник предложил ничью. Согласны?</p>
+                        <button id="accept-draw" class="btn_yn">Принять</button>
+                        <button id="decline-draw" class="btn_yn">Отклонить</button>
+                    </div>
+                </div>
             </div>
             <div class="user-info2" id="player-info">
                 <div class="user-card">
@@ -34,21 +48,22 @@
                 </div>
             </div>
         </div>
+
+        <div class="command-container">
+            <input type="text" id="commandInput" placeholder="Введите команду (например, e2e4)">
+            <button class="command-btn" id="sendCommand">Отправить</button>
+            <div>логи сервера</div>
+            <div class="server_logs" id="server_logs_field"></div>
+        </div>
+
         <div class="btns">
-            <button class="action-btn">
-                <img src="reqs/white-flag-svgrepo-com.svg" alt="surrender" class="btn-image">
+            <button class="action-btn" id="surrender-btn">
+                <img src="reqs/white-flag-svgrepo-com.svg" class="btn-image">
             </button>
-            <button class="action-btn">
-                <img src="reqs/handshake-svgrepo-com.svg" alt="draw-offer" class="btn-image">
+            <button class="action-btn" id="draw-offer-btn">
+                <img src="reqs/handshake-svgrepo-com.svg" class="btn-image">
             </button>
         </div>
-    </div>
-
-    <div class="command-container">
-        <input type="text" id="commandInput" placeholder="Введите команду (например, e2e4)">
-        <button class="command-btn" id="sendCommand">Отправить</button>
-        <div>логи сервера</div>
-        <div class="server_logs" id="server_logs_field"></div>
     </div>
 </body>
 </html>
