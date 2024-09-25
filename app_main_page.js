@@ -188,7 +188,7 @@ const commandInput = document.getElementById('commandInput');
 const sendCommandButton = document.getElementById('sendCommand');
 const logsField = document.getElementById('server_logs_field');
 
-const socket = new WebSocket('ws://localhost:8181');
+const socket = new WebSocket('ws://chess.k6z.ru:8181');
 
 sendCommandButton.addEventListener('click', () => {
     const command = commandInput.value;
