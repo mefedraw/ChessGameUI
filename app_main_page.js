@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const surrenderModal = document.getElementById('surrenderConfirmModal');
 const drawOfferModal = document.getElementById('drawOfferModal');
 const surrenderBtn = document.getElementById('surrender-btn');
@@ -35,6 +36,16 @@ acceptDrawBtn.addEventListener('click', function() {
 declineDrawBtn.addEventListener('click', function() {
     console.log('Draw declined');
     drawOfferModal.classList.add('hidden');
+=======
+document.querySelectorAll('.action-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        if (this.alt === 'surrender') {
+            console.log('Surrender button clicked');
+        } else if (this.alt === 'draw-offer') {
+            console.log('Draw offer button clicked');
+        }
+    });
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
 });
 
 const chessboard = document.getElementById('chessboard');
@@ -42,16 +53,29 @@ const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const ranksWhite = [8, 7, 6, 5, 4, 3, 2, 1];
 const ranksBlack = [1, 2, 3, 4, 5, 6, 7, 8];
 let selectedSquare = null;
+<<<<<<< HEAD
 let highlightedSquare = null; 
 let matchId = 1; 
 
 let whiteTime = 600; 
 let blackTime = 600; 
+=======
+let highlightedSquare = null; // Для подсветки выбранной клетки
+let matchId = 1; // Пример ID матча
+
+// Таймеры
+let whiteTime = 600; // 10 минут в секундах для белых
+let blackTime = 600; // 10 минут в секундах для черных
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
 let isWhiteTurn = true;
 let timerInterval = null;
 
 function startTimer() {
+<<<<<<< HEAD
     if (timerInterval) return;
+=======
+    if (timerInterval) return; // Таймер уже запущен
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
 
     timerInterval = setInterval(() => {
         if (isWhiteTurn) {
@@ -70,11 +94,14 @@ function startTimer() {
     }, 1000);
 }
 
+<<<<<<< HEAD
 function switchTurn() {
     isWhiteTurn = !isWhiteTurn;
     if (!timerInterval) startTimer(); 
 }
 
+=======
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
 function updateTimerDisplay(player, time) {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
@@ -90,12 +117,20 @@ function updatePlayerLayout(playerColor) {
     opponentInfo.classList.remove('user-info1', 'user-info2');
 
     if (playerColor === 'w') {
+<<<<<<< HEAD
+=======
+        // Если белые, оставляем игрока снизу
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
         infoContainer.appendChild(opponentInfo);
         infoContainer.appendChild(document.querySelector('.chessboard-container'));
         infoContainer.appendChild(playerInfo);
         opponentInfo.classList.add('user-info1');
         playerInfo.classList.add('user-info2');
     } else {
+<<<<<<< HEAD
+=======
+        // Если черные, меняем местами игрока и противника
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
         infoContainer.appendChild(playerInfo);
         infoContainer.appendChild(document.querySelector('.chessboard-container'));
         infoContainer.appendChild(opponentInfo);
@@ -104,10 +139,22 @@ function updatePlayerLayout(playerColor) {
     }
 }
 
+<<<<<<< HEAD
 function createChessboardFromFEN(fen, playerColor) {
     updatePlayerLayout(playerColor);  
 
     chessboard.innerHTML = ''; 
+=======
+function switchTurn() {
+    isWhiteTurn = !isWhiteTurn;
+    if (!timerInterval) startTimer(); // Запуск таймера после первого хода белого
+}
+
+function createChessboardFromFEN(fen, playerColor) {
+    updatePlayerLayout(playerColor);  // Обновляем расположение блоков
+
+    chessboard.innerHTML = ''; // Очистка доски
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
     const ranks = playerColor === 'w' ? ranksWhite : ranksBlack;
     const files = playerColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
     let position = fen.split(' ')[0];
@@ -152,13 +199,21 @@ function addPieceFromFEN(square, row, col, rows) {
 
     for (let char of fenRow) {
         if (!isNaN(char)) {
+<<<<<<< HEAD
             colIndex += parseInt(char); 
+=======
+            colIndex += parseInt(char); // пропускаем пустые клетки
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
         } else {
             const color = char === char.toUpperCase() ? 'white' : 'black';
             const piece = char.toLowerCase();
             if (colIndex === col) {
                 const img = document.createElement('img');
+<<<<<<< HEAD
                 img.src = `reqs/${color}_${piece}.svg`; 
+=======
+                img.src = `reqs/${color}_${piece}.svg`; // Путь к изображению фигуры
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
                 img.classList.add('chess-piece');
                 square.appendChild(img);
             }
@@ -168,9 +223,17 @@ function addPieceFromFEN(square, row, col, rows) {
 }
 
 function handleSquareClick(row, col, files, ranks, playerColor) {
+<<<<<<< HEAD
     const clickedSquare = files[col] + ranks[row]; 
 
     if (highlightedSquare) {
+=======
+    const clickedSquare = files[col] + ranks[row]; // Получаем обозначение клетки, например "e2"
+
+    // Найдем все клетки, которые имеют класс highlight, и уберем его
+    if (highlightedSquare) {
+        // Возвращаем исходный цвет клетки в зависимости от ее класса
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
         if (highlightedSquare.classList.contains('light')) {
             highlightedSquare.style.backgroundColor = '#efe6d5';
         } else if (highlightedSquare.classList.contains('dark')) {
@@ -178,10 +241,18 @@ function handleSquareClick(row, col, files, ranks, playerColor) {
         }
         highlightedSquare.classList.remove('highlight');
     }
+<<<<<<< HEAD
     
     const square = chessboard.querySelector(`.square:nth-child(${(row * 8) + col + 1})`);
 
     if (selectedSquare === null) {
+=======
+
+    const square = chessboard.querySelector(`.square:nth-child(${(row * 8) + col + 1})`);
+
+    if (selectedSquare === null) {
+        // Если не выбрана клетка, мы выбираем ее
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
         selectedSquare = clickedSquare;
         highlightedSquare = square;
 
@@ -194,6 +265,7 @@ function handleSquareClick(row, col, files, ranks, playerColor) {
         square.classList.add('highlight');
         console.log('Selected square: ' + selectedSquare);
     } else {
+<<<<<<< HEAD
         let move = `${selectedSquare}${clickedSquare}`; 
         console.log('Move: ' + move);
         socket.send(`${matchId}:${move}`);
@@ -204,11 +276,30 @@ function handleSquareClick(row, col, files, ranks, playerColor) {
 }
 
 const socket = new WebSocket('ws://localhost:8181');
+=======
+        // Если уже была выбрана клетка, то делаем ход
+        let move = `${selectedSquare}${clickedSquare}`; // Формат хода, например "e2e4"
+        console.log('Move: ' + move);
+        socket.send(`${matchId}:${move}`);
+
+        // Снимаем выделение после хода
+        selectedSquare = null;
+        highlightedSquare = null;
+        switchTurn(); // Переключаем ход
+    }
+}
+
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
 
 const commandInput = document.getElementById('commandInput');
 const sendCommandButton = document.getElementById('sendCommand');
 const logsField = document.getElementById('server_logs_field');
 
+<<<<<<< HEAD
+=======
+const socket = new WebSocket('ws://192.168.0.113:8181');
+
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
 sendCommandButton.addEventListener('click', () => {
     const command = commandInput.value;
     if (command) {
@@ -225,7 +316,10 @@ socket.onmessage = function (event) {
         const newFEN = parts[0];
         const playerColor = parts[1];
         createChessboardFromFEN(newFEN, playerColor);
+<<<<<<< HEAD
         switchTurn(); 
+=======
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
     } else if (data.includes("LOGS:")) {
         const logs = data.slice(5);
         logsField.innerHTML = logs.replace(/\n/g, '<br>');
@@ -241,5 +335,10 @@ socket.onerror = function (error) {
 };
 
 const whiteFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+<<<<<<< HEAD
+=======
+const blackFEN = "RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr";
+
+>>>>>>> 851a30735d82a2cbd8a85b5fb285fce048c0150f
 
 createChessboardFromFEN(whiteFEN, 'w');
