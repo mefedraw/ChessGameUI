@@ -1,7 +1,7 @@
 let commandQueue = [];
 
 function createWebSocket() {
-    let socket = new WebSocket('ws://0.0.0.0:8181');
+    let socket = new WebSocket('ws://localhost:8181');
 
     socket.onopen = function () {
         console.log('Соединение установлено');
