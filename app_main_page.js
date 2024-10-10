@@ -1,61 +1,3 @@
-let commandQueue = [];
-
-function createWebSocket() {
-    let socket = new WebSocket('ws://localhost:8181');
-
-    socket.onopen = function () {
-        console.log('Соединение установлено');
-        while (commandQueue.length > 0) {
-            let command = commandQueue.shift();
-            socket.send(command);
-        }
-    };
-
-    socket.onerror = function (error) {
-        console.error('Ошибка WebSocket:', error);
-    };
-
-    socket.onclose = function (event) {
-        console.log('WebSocket закрыт. Повторная попытка подключения через 1 секунду...');
-        setTimeout(() => {
-            socket = createWebSocket();
-        }, 1000);
-    };
-
-    socket.onmessage = function (event) {
-        const data = event.data;
-
-        if (data.includes("FEN:")) {
-            const parts = data.slice(4).split(":");
-            const newFEN = parts[0];
-            const playerColor = parts[1];
-            createChessboardFromFEN(newFEN, playerColor);
-            switchTurn(); 
-        } else if (data.includes("LOGS:")) {
-            const logs = data.slice(5);
-            logsField.innerHTML = logs.replace(/\n/g, '<br>');
-        } else if (data.includes("GAMEID:")) {
-            const gameId = data.slice(7);
-            gameIdField.innerHTML = gameId;
-            matchId = gameId;
-            console.log('Получен matchId от сервера:', matchId);
-        }
-    };
-
-    return socket;
-}
-
-let socket = createWebSocket();
-
-function sendCommand(command) {
-    if (socket.readyState === WebSocket.OPEN) {
-        socket.send(command);
-    } else {
-        console.log('WebSocket не открыт. Команда добавлена в очередь.');
-        commandQueue.push(command);
-    }
-}
-
 const surrenderModal = document.getElementById('surrenderConfirmModal');
 const drawOfferModal = document.getElementById('drawOfferModal');
 const surrenderBtn = document.getElementById('surrender-btn');
@@ -101,7 +43,7 @@ const ranksWhite = [8, 7, 6, 5, 4, 3, 2, 1];
 const ranksBlack = [1, 2, 3, 4, 5, 6, 7, 8];
 let selectedSquare = null;
 let highlightedSquare = null; 
-let matchId = null;
+let matchId = 1; 
 
 let whiteTime = 600; 
 let blackTime = 600; 
@@ -254,13 +196,14 @@ function handleSquareClick(row, col, files, ranks, playerColor) {
     } else {
         let move = `${selectedSquare}${clickedSquare}`; 
         console.log('Move: ' + move);
-
-        sendCommand(`${matchId}:${move}`);
+        socket.send(`${matchId}:${move}`);
 
         selectedSquare = null;
         highlightedSquare = null;
     }
 }
+
+const socket = new WebSocket('ws://localhost:8181');
 
 const commandInput = document.getElementById('commandInput');
 const sendCommandButton = document.getElementById('sendCommand');
@@ -269,10 +212,34 @@ const logsField = document.getElementById('server_logs_field');
 sendCommandButton.addEventListener('click', () => {
     const command = commandInput.value;
     if (command) {
-        sendCommand(command);
+        socket.send(command);
         commandInput.value = '';
     }
 });
 
+socket.onmessage = function (event) {
+    const data = event.data;
+
+    if (data.includes("FEN:")) {
+        const parts = data.slice(4).split(":");
+        const newFEN = parts[0];
+        const playerColor = parts[1];
+        createChessboardFromFEN(newFEN, playerColor);
+        switchTurn(); 
+    } else if (data.includes("LOGS:")) {
+        const logs = data.slice(5);
+        logsField.innerHTML = logs.replace(/\n/g, '<br>');
+    }
+};
+
+socket.onopen = function () {
+    console.log('Соединение установлено');
+};
+
+socket.onerror = function (error) {
+    console.error('Ошибка WebSocket:', error);
+};
+
 const whiteFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+
 createChessboardFromFEN(whiteFEN, 'w');
