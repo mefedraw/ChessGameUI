@@ -208,6 +208,7 @@ const socket = new WebSocket('ws://localhost:8181');
 const commandInput = document.getElementById('commandInput');
 const sendCommandButton = document.getElementById('sendCommand');
 const logsField = document.getElementById('server_logs_field');
+const movesField = document.getElementById('moves_logs-field');
 
 sendCommandButton.addEventListener('click', () => {
     const command = commandInput.value;
@@ -229,6 +230,9 @@ socket.onmessage = function (event) {
     } else if (data.includes("LOGS:")) {
         const logs = data.slice(5);
         logsField.innerHTML = logs.replace(/\n/g, '<br>');
+    }else if (data.includes("MOVES:")) {
+        const logs = data.slice(6);
+        logsField.innerHTML += logs.replace(/\n/g, '<br>');
     }
 };
 
