@@ -232,7 +232,7 @@ socket.onmessage = function (event) {
         logsField.innerHTML = logs.replace(/\n/g, '<br>');
     }else if (data.includes("MOVES:")) {
         const logs = data.slice(6);
-        logsField.innerHTML += logs.replace(/\n/g, '<br>');
+        movesField.innerHTML += logs.replace(/\n/g, '<br>');
     }
 };
 
